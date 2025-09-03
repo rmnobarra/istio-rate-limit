@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ratelimit-config
+  namespace: istio-system
+data:
+  ping-pong.yaml: |
+    domain: ping-pong
+    descriptors:
+      - key: client_id
+        value: gold
+        rate_limit: { unit: minute, requests_per_unit: 100 }
+      - key: client_id
+        value: silver
+        rate_limit: { unit: minute, requests_per_unit: 50 }
+      - key: client_id
+        value: bronze
+        rate_limit: { unit: minute, requests_per_unit: 20 }
+      - key: client_id
+        detailed_metric: true
+        rate_limit: { unit: minute, requests_per_unit: 10 }

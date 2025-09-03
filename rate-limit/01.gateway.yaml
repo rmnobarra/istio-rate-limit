@@ -1,0 +1,48 @@
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: public-gw
+  namespace: istio-system
+spec:
+  selector:
+    istio: ingressgateway     # label padrão do Deployment do gateway
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "example.com"           # troque pelo seu domínio (ou use "*")
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: ping-pong-vs
+  namespace: ping-pong-app-01
+spec:
+  hosts:
+  - "example.com"             # mesmo host do Gateway
+  gateways:
+  - istio-system/public-gw
+  http:
+  - match:
+    - uri:
+        prefix: /             # expõe /, /ping, /metrics, etc
+    route:
+    - destination:
+        host: ping-pong-service.ping-pong-app-01.svc.cluster.local
+        port:
+          number: 80
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: ping-pong
+  namespace: ping-pong-app-01
+spec:
+  selector:
+    matchLabels:
+      app: ping-pong-app
+  endpoints:
+  - port: http
+    path: /metrics

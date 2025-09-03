@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ratelimit
+  namespace: istio-system
+  labels: { app: ratelimit }
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: ratelimit }
+  template:
+    metadata:
+      labels: { app: ratelimit }
+    spec:
+      containers:
+      - name: ratelimit
+        image: envoyproxy/ratelimit:master 
+        command: ["/bin/ratelimit"]          # processo em foreground
+        ports:
+        - { name: http,    containerPort: 8080 }  # /healthcheck, /json
+        - { name: grpc,    containerPort: 8081 }  # gRPC RLS
+        - { name: metrics, containerPort: 9090 }  # Prometheus
+        env:
+        # --- Redis / Config ---
+        - { name: CONFIG_TYPE, value: "FILE" }
+        - { name: REDIS_SOCKET_TYPE, value: "tcp" }
+        - { name: REDIS_URL, value: "redis:6379" }
+        - { name: RUNTIME_ROOT, value: "/data" }
+        - { name: RUNTIME_SUBDIRECTORY, value: "ratelimit" }
+        - { name: RUNTIME_APPDIRECTORY, value: "config" }
+        - { name: RUNTIME_WATCH_ROOT, value: "false" }
+        - { name: HEALTHY_WITH_AT_LEAST_ONE_CONFIG_LOADED, value: "true" }
+        - { name: FORCE_START_WITHOUT_INITIAL_CONFIG, value: "true" }
+        - { name: MERGE_DOMAIN_CONFIG, value: "true" }
+        # --- MÉTRICAS: habilite APENAS UM sink ---
+        - { name: USE_PROMETHEUS, value: "true" }
+        - { name: PROMETHEUS_ADDR, value: ":9090" }
+        - { name: PROMETHEUS_PATH, value: "/metrics" }
+        - { name: USE_STATSD, value: "false" }     
+        - { name: USE_DOG_STATSD, value: "false" }
+        readinessProbe:
+          httpGet: { path: /healthcheck, port: 8080 }
+          initialDelaySeconds: 2
+          periodSeconds: 5
+        livenessProbe:
+          httpGet: { path: /healthcheck, port: 8080 }
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        volumeMounts:
+        - name: ratelimit-config
+          mountPath: /data/ratelimit/config/ping-pong.yaml
+          subPath: ping-pong.yaml
+      volumes:
+      - name: ratelimit-config
+        configMap:
+          name: ratelimit-config
+          items:
+          - key: ping-pong.yaml
+            path: ping-pong.yaml
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ratelimit
+  namespace: istio-system
+  labels: { app: ratelimit }
+spec:
+  selector: { app: ratelimit }
+  ports:
+  - { name: http,    port: 8080, targetPort: 8080 }
+  - { name: grpc,    port: 8081, targetPort: 8081 }
+  - { name: metrics, port: 9090, targetPort: 9090 }
