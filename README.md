@@ -3,6 +3,9 @@
 
 Este projeto tem como objetivo implementar e demonstrar uma solução de rate limiting (limitação de requisições) utilizando Istio e Envoy em um ambiente Kubernetes. O rate limiting é fundamental para proteger APIs e serviços contra abusos, controlar o tráfego e garantir a disponibilidade dos recursos.
 
+O serviço utilizado para esse caso de uso é o envoy proxy, o repositório do projeto pode ser acessado em [https://github.com/envoyproxy/ratelimit](https://github.com/envoyproxy/ratelimit).
+
+
 ## Propósito
 - Proteger aplicações expostas via Istio Gateway contra excesso de requisições.
 - Demonstrar como configurar filtros Envoy para aplicar políticas de rate limiting baseadas em identificadores de cliente (por exemplo, cabeçalho `X-Client-Id`).
