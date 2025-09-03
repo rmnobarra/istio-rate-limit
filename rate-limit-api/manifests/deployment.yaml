@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rate-limit-api
+  namespace: istio-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rate-limit-api
+  template:
+    metadata:
+      labels:
+        app: rate-limit-api
+    spec:
+      serviceAccountName: rate-limit-api
+      containers:
+      - name: rate-limit-api
+        image: rmnobarra/rate-limit-api:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+        env:
+        - name: RATE_LIMIT_NAMESPACE
+          value: "istio-system"
+        - name: RATE_LIMIT_CONFIGMAP
+          value: "ratelimit-config"
+        - name: RATE_LIMIT_CONFIGMAP_KEY
+          value: "ping-pong.yaml"

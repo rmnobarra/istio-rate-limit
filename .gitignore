@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.env
+.env
+.venv
+venv/
+ENV/
+
+# VSCode
+.vscode/
+
+# Jupyter
+.ipynb_checkpoints
+
+# Docker
+*.log
+dist/
+build/
+*.egg-info/
+
+# Kubernetes
+*.yaml~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Rate Limit API
+rate-limit-api/__pycache__/
+rate-limit-api/.env
+rate-limit-api/.venv
+rate-limit-api/venv/
+rate-limit-api/.mypy_cache/
+rate-limit-api/.pytest_cache/
+rate-limit-api/.coverage
+rate-limit-api/.tox/
+rate-limit-api/.idea/
+rate-limit-api/.pylint.d/
