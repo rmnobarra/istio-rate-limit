@@ -25,7 +25,7 @@ API REST para listar, adicionar e remover regras do ConfigMap de rate limit do I
 
 ## Build da imagem Docker
 ```bash
-docker build -t <seu-usuario>/rate-limit-api:latest .
+docker build -t rmnobarra/rate-limit-api:latest .
 ```
 
 ## Deploy no Kubernetes
@@ -69,6 +69,3 @@ docker build -t <seu-usuario>/rate-limit-api:latest .
 - Regras sem `value` (ex: apenas `detailed_metric`) não entram na checagem de duplicidade.
 - Após qualquer alteração, o deployment do serviço de rate limit é reiniciado automaticamente para aplicar a nova configuração.
 - Para rodar no cluster, a ServiceAccount precisa de permissão para `get`, `list`, `patch` em ConfigMaps e `patch` em Deployments.
-
-## Segurança
-Considere proteger a API (ex: autenticação, RBAC, rede) em ambientes produtivos.

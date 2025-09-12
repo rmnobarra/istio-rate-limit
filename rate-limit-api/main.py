@@ -46,7 +46,6 @@ GET /rules
         version="1.0.0"
 )
 
-# Carrega config do cluster (dentro ou fora)
 try:
     config.load_incluster_config()
 except Exception:
@@ -56,7 +55,6 @@ k8s = client.CoreV1Api()
 
 def get_configmap():
     return k8s.read_namespaced_config_map(CONFIGMAP_NAME, NAMESPACE)
-
 
 def update_configmap(data):
     body = {"data": {CONFIGMAP_KEY: data}}
@@ -86,8 +84,6 @@ def rollout_restart_deployment(deployment_name: str, namespace: str):
         body=body
     )
 
-
-
 @app.get("/rules", summary="Listar regras", response_description="Lista de regras atuais", tags=["Regras"])
 def list_rules():
     """
@@ -97,9 +93,7 @@ def list_rules():
     raw = cm.data.get(CONFIGMAP_KEY, "")
     doc = yaml.safe_load(raw)
     rules = doc.get("descriptors", [])
-    # Adiciona o índice como 'id' em cada regra
     return [dict(id=i, **rule) for i, rule in enumerate(rules)]
-
 
 @app.post(
     "/rules",
@@ -135,12 +129,10 @@ def add_rule(
     cm = get_configmap()
     doc = yaml.safe_load(cm.data.get(CONFIGMAP_KEY, ""))
     descriptors = doc.setdefault("descriptors", [])
-    # Validação: não permitir duplicidade de key+value (apenas se value estiver presente)
     new_key = rule.get("key")
     new_value = rule.get("value")
     if new_value is not None:
         for desc in descriptors:
-            # Só compara se ambos têm value
             if desc.get("key") == new_key and desc.get("value") == new_value:
                 raise HTTPException(400, f"Já existe uma regra com key={new_key} e value={new_value}.")
     descriptors.append(rule)
@@ -148,7 +140,6 @@ def add_rule(
     update_configmap(new_yaml)
     rollout_restart_deployment("ratelimit", NAMESPACE)
     return {"status": "ok"}
-
 
 @app.delete(
     "/rules/{idx}",
